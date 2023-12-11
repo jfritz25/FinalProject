@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">FinalProject</string>
+    <string name="new_account">New account</string>
+    <string name="name">Name</string>
+    <string name="email">Email</string>
+    <string name="by_proceeding_you_also_agree_to_the_terms_of_service_and_privacy_policy">By proceeding, you also agree to the Terms of Service and Privacy Policy</string>
+    <string name="next">Next</string>
+    <string name="capture">Capture</string>
+    <string name="password">password</string>
+    <string name="password2">Password</string>
+</resources>
