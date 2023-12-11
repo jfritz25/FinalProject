@@ -1,5 +1,8 @@
+package com.example.finalproject
+
 import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
@@ -17,8 +20,8 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.example.finalproject.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
@@ -26,6 +29,9 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
+import android.Manifest
+import android.widget.FrameLayout
+import android.widget.LinearLayout
 
 class SignUpActivity : AppCompatActivity() {
 
@@ -40,6 +46,9 @@ class SignUpActivity : AppCompatActivity() {
     private val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
     private lateinit var outputDirectory: File
     private lateinit var viewFinder: PreviewView
+    private val MY_REQUEST_PERMISSIONS_CAMERA = 1
+    private lateinit var layoutPreview: LinearLayout
+
 
 
     private fun getOutputDirectory(): File {
@@ -66,6 +75,8 @@ class SignUpActivity : AppCompatActivity() {
         signUpButton = findViewById(R.id.signup)
         captureButton = findViewById(R.id.capture)
         passwordEditText = findViewById(R.id.password)
+        viewFinder = findViewById(R.id.viewFinder)
+        layoutPreview = findViewById(R.id.layoutPreview)
 
         imageView.setOnClickListener { view ->
             showImagePickerDialog()
@@ -137,6 +148,12 @@ class SignUpActivity : AppCompatActivity() {
     }
 
     private fun startCamera() {
+
+        layoutPreview.visibility = View.VISIBLE
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), MY_REQUEST_PERMISSIONS_CAMERA)
+        }
+
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
         cameraProviderFuture.addListener({
@@ -158,8 +175,6 @@ class SignUpActivity : AppCompatActivity() {
 
                 cameraProvider.bindToLifecycle(
                     this, cameraSelector, preview, imageCapture)
-
-                captureButton.visibility = View.VISIBLE
 
             } catch(exc: Exception) {
             }
@@ -183,10 +198,20 @@ class SignUpActivity : AppCompatActivity() {
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                     val savedUri = Uri.fromFile(photoFile)
                     imageView.setImageURI(savedUri)
+
+                    // Unbind all use cases after the photo is taken
+                    val cameraProviderFuture = ProcessCameraProvider.getInstance(this@SignUpActivity)
+                    cameraProviderFuture.addListener({
+                        val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+                        cameraProvider.unbindAll()
+                    }, ContextCompat.getMainExecutor(this@SignUpActivity))
+                    layoutPreview.visibility = View.GONE
+
                 }
                 override fun onError(exc: ImageCaptureException) {
 
                 }
             })
     }
+
 }

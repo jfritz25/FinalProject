@@ -1,6 +1,5 @@
 package com.example.finalproject
 
-import SignUpActivity
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -16,7 +15,9 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
             finish()
         } else {
-            // User is signed in
+            val intent = Intent(this, SignUpActivity::class.java)
+            startActivity(intent)
+            finish()
             // Continue with your MainActivity code
         }
 
