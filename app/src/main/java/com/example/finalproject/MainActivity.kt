@@ -10,15 +10,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val user = FirebaseAuth.getInstance().currentUser
         if (user == null) {
-            // No user is signed in
             val intent = Intent(this, SignUpActivity::class.java)
             startActivity(intent)
             finish()
         } else {
-            val intent = Intent(this, SignUpActivity::class.java)
-            startActivity(intent)
-            finish()
-            // Continue with your MainActivity code
+            //Continue with your MainActivity code
         }
 
     }

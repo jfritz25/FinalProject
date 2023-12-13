@@ -8,4 +8,6 @@
     <string name="capture">Capture</string>
     <string name="password">password</string>
     <string name="password2">Password</string>
+    <string name="favorite_restaurants">Favorite Restaurants</string>
+    <string name="all_restaurants">All Restaurants</string>
 </resources>
