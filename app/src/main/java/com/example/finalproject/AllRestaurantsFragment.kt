@@ -31,6 +31,7 @@ class AllRestaurantsFragment : Fragment() {
         if (isGranted) {
             getLastLocation()
         } else {
+
         }
     }
 
@@ -68,7 +69,7 @@ class AllRestaurantsFragment : Fragment() {
                 userLong = location.longitude
             }
         val db = FirebaseFirestore.getInstance()
-        db.collection("restaurants")
+        db.collection("Restaurants")
             .get()
             .addOnSuccessListener { result ->
                 for (document in result) {
@@ -101,7 +102,7 @@ class AllRestaurantsFragment : Fragment() {
 
     }
     private fun calculateDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
-        val r = 6371 // radius of earth in km
+        val r = 3963 // radius of earth in mi
         val latDistance = Math.toRadians(lat2 - lat1)
         val lonDistance = Math.toRadians(lon2 - lon1)
         val a = kotlin.math.sin(latDistance / 2).pow(2.0) +

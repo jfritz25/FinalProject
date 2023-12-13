@@ -30,6 +30,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import android.Manifest
+import android.content.Intent
 import android.graphics.Canvas
 import android.util.Log
 import android.widget.FrameLayout
@@ -102,10 +103,9 @@ class SignUpActivity : AppCompatActivity() {
                         userMap["Email"] = email
                         userMap["Name"] = name
 
-
                         val storageRef = user?.let {
-                            FirebaseStorage.getInstance().reference.child("profileImages").child(
-                                it.uid)
+                            FirebaseStorage.getInstance().reference.child("profileImages")
+                                .child(it.uid)
                         }
 
                         val bitmap = Bitmap.createBitmap(
@@ -132,6 +132,10 @@ class SignUpActivity : AppCompatActivity() {
                                     db.collection("users").document(it.uid).set(userMap)
                                         .addOnSuccessListener {
                                             Log.d("Login", "DocumentSnapshot successfully written!")
+                                            // Start MainActivity here
+                                            val intent = Intent(this, MainActivity::class.java)
+                                            startActivity(intent)
+                                            finish()
                                         }
                                         .addOnFailureListener { e ->
                                             Log.w("Login", "Error writing document", e)
@@ -139,16 +143,26 @@ class SignUpActivity : AppCompatActivity() {
                                 }
                             }
                         }
+
                     } else {
-                        Toast.makeText(baseContext, "Authentication failed.",
-                            Toast.LENGTH_SHORT).show()
+                        auth.signInWithEmailAndPassword(email, password)
+                            .addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
+                                    val intent = Intent(this, MainActivity::class.java)
+                                    startActivity(intent)
+                                    finish()
+                                } else {
+                                    // If sign in fails, display a message to the user.
+                                    println("Sign in: failure")
+                                }
+                            }
                     }
                 }
-
         }
 
 
-        captureButton.setOnClickListener{view ->
+
+            captureButton.setOnClickListener{view ->
             takePhoto()
         }
     }

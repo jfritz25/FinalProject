@@ -13,6 +13,17 @@ class HomeScreenFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_homescreen, container, false)
+
+        // Create instances of your fragments
+        val fragment1 = FavoriteRestaurantsFragment()
+        val fragment2 = AllRestaurantsFragment()
+
+        // Add the fragments to your HomeScreenFragment
+        childFragmentManager.beginTransaction().apply {
+            add(R.id.fragment_container_favorite, fragment1)
+            add(R.id.fragment_container_all, fragment2)
+            commit()
+        }
         return view
     }
 }
