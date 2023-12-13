@@ -1,12 +1,13 @@
 package com.example.finalproject
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class FavoriteRestaurantsAdapter(private val favoriteRestaurants: List<Restaurant>) : RecyclerView.Adapter<FavoriteRestaurantsAdapter.ViewHolder>() {
+class FavoriteRestaurantsAdapter(private var favoriteRestaurants: List<Restaurant>) : RecyclerView.Adapter<FavoriteRestaurantsAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.rv_favorite_restaurants, parent, false)
@@ -27,4 +28,10 @@ class FavoriteRestaurantsAdapter(private val favoriteRestaurants: List<Restauran
             restaurantName.text = restaurant.name
         }
     }
+    @SuppressLint("NotifyDataSetChanged")
+    fun updateData(newFavoriteRestaurants: List<Restaurant>) {
+        favoriteRestaurants = newFavoriteRestaurants
+        notifyDataSetChanged()
+    }
+
 }

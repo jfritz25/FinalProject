@@ -30,8 +30,11 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import android.Manifest
+import android.graphics.Canvas
+import android.util.Log
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import com.google.firebase.firestore.FirebaseFirestore
 
 class SignUpActivity : AppCompatActivity() {
 
@@ -92,19 +95,27 @@ class SignUpActivity : AppCompatActivity() {
                     if (task.isSuccessful) {
                         val user = auth.currentUser
 
-                        val database = FirebaseDatabase.getInstance().reference
+                        // Get a reference to the Firestore service
+                        val db = FirebaseFirestore.getInstance()
 
                         val userMap = HashMap<String, Any>()
-                        userMap["name"] = name
-                        userMap["email"] = email
+                        userMap["Email"] = email
+                        userMap["Name"] = name
+
 
                         val storageRef = user?.let {
                             FirebaseStorage.getInstance().reference.child("profileImages").child(
                                 it.uid)
                         }
-                        imageView.isDrawingCacheEnabled = true
-                        imageView.buildDrawingCache()
-                        val bitmap = (imageView.drawable as BitmapDrawable).bitmap
+
+                        val bitmap = Bitmap.createBitmap(
+                            imageView.width,
+                            imageView.height,
+                            Bitmap.Config.ARGB_8888
+                        )
+                        val canvas = Canvas(bitmap)
+                        imageView.draw(canvas)
+
                         val baos = ByteArrayOutputStream()
                         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
                         val data = baos.toByteArray()
@@ -114,18 +125,26 @@ class SignUpActivity : AppCompatActivity() {
                         }?.addOnSuccessListener { taskSnapshot ->
                             val downloadUrl = taskSnapshot.metadata!!.reference!!.downloadUrl
                             downloadUrl.addOnSuccessListener { uri ->
-                                userMap["profileImage"] = uri.toString()
+                                userMap["Image"] = uri.toString()
 
-                                user?.let { database.child("users").child(it.uid) }
-                                    ?.setValue(userMap)
+                                user?.let {
+                                    // Add the user's data to the "users" collection in Firestore
+                                    db.collection("users").document(it.uid).set(userMap)
+                                        .addOnSuccessListener {
+                                            Log.d("Login", "DocumentSnapshot successfully written!")
+                                        }
+                                        .addOnFailureListener { e ->
+                                            Log.w("Login", "Error writing document", e)
+                                        }
+                                }
                             }
                         }
                     } else {
-
                         Toast.makeText(baseContext, "Authentication failed.",
                             Toast.LENGTH_SHORT).show()
                     }
                 }
+
         }
 
 

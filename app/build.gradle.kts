@@ -60,6 +60,10 @@ dependencies {
     implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation("com.google.firebase:firebase-database-ktx:20.2.2")
+    implementation("com.firebase:geofire-android:3.2.0")
+    implementation("com.firebase:geofire-android-common:3.2.0")
+    implementation("com.google.android.gms:play-services-location:15.0.1")
+
 
 
 
