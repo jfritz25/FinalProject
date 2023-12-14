@@ -103,9 +103,11 @@ class SignUpActivity : AppCompatActivity() {
                         userMap["Email"] = email
                         userMap["Name"] = name
 
-                        val storageRef = user?.let {
-                            FirebaseStorage.getInstance().reference.child("profileImages")
-                                .child(it.uid)
+                        val storageRef = user.let {
+                            it?.let { it1 ->
+                                FirebaseStorage.getInstance().reference.child("profileImages/${user?.uid}")
+                                    .child(it1.uid)
+                            }
                         }
 
                         val bitmap = Bitmap.createBitmap(
@@ -120,31 +122,34 @@ class SignUpActivity : AppCompatActivity() {
                         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
                         val data = baos.toByteArray()
 
-                        var uploadTask = storageRef?.putBytes(data)
-                        uploadTask?.addOnFailureListener {
-                        }?.addOnSuccessListener { taskSnapshot ->
-                            val downloadUrl = taskSnapshot.metadata!!.reference!!.downloadUrl
-                            downloadUrl.addOnSuccessListener { uri ->
+                        var uploadTask = storageRef!!.putBytes(data)
+                        uploadTask.addOnFailureListener {exception ->
+                            Log.d("upload", "failing: ${exception.message}")
+                        }.addOnSuccessListener { taskSnapshot ->
+                            // Get the download URL
+                            taskSnapshot.storage.downloadUrl.addOnSuccessListener { uri ->
                                 userMap["Image"] = uri.toString()
 
-                                user?.let {
+                               user.let {
                                     // Add the user's data to the "users" collection in Firestore
-                                    db.collection("users").document(it.uid).set(userMap)
-                                        .addOnSuccessListener {
-                                            Log.d("Login", "DocumentSnapshot successfully written!")
-                                            // Start MainActivity here
-                                            val intent = Intent(this, MainActivity::class.java)
-                                            startActivity(intent)
-                                            finish()
-                                        }
-                                        .addOnFailureListener { e ->
-                                            Log.w("Login", "Error writing document", e)
-                                        }
+                                   if (it != null) {
+                                       db.collection("users").document(it.uid).set(userMap)
+                                           .addOnSuccessListener {
+                                               Log.d("Login", "DocumentSnapshot successfully written!")
+                                               // Start MainActivity here
+                                               val intent = Intent(this, MainActivity::class.java)
+                                               startActivity(intent)
+                                               finish()
+                                           }
+                                           .addOnFailureListener { e ->
+                                               Log.w("Login", "Error writing document", e)
+                                           }
+                                   }
                                 }
                             }
                         }
-
-                    } else {
+                    }
+            else {
                         auth.signInWithEmailAndPassword(email, password)
                             .addOnCompleteListener { task ->
                                 if (task.isSuccessful) {

@@ -19,11 +19,13 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlin.math.atan2
 import kotlin.math.pow
 import kotlin.math.sqrt
+import com.google.firebase.auth.FirebaseAuth
+
 
 
 class AllRestaurantsFragment : Fragment() {
+    private val user = FirebaseAuth.getInstance().currentUser
     private var restaurants = mutableListOf<Restaurant>()
-    private val adapter = AllRestaurantsAdapter(restaurants)
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var userLat: Double = 0.0
     private var userLong: Double = 0.0
@@ -31,9 +33,9 @@ class AllRestaurantsFragment : Fragment() {
         if (isGranted) {
             getLastLocation()
         } else {
-
         }
     }
+    private var adapter= AllRestaurantsAdapter(mutableListOf())
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,8 +72,9 @@ class AllRestaurantsFragment : Fragment() {
                     userLong = it.longitude
                 }
             }
+
         val db = FirebaseFirestore.getInstance()
-        db.collection("Restaurants")
+        db.collection("restaurants")
             .get()
             .addOnSuccessListener { result ->
                 for (document in result) {
@@ -84,26 +87,29 @@ class AllRestaurantsFragment : Fragment() {
                             location.longitude
                         )
                         if (distance <= 50) {
-                            val name = document.getString("Name")!!
-                            val items = document.get("Items") as List<String>
-                            val prices = document.get("Prices") as List<String>
-                            val userFav = document.get("userFav") as List<String>
-                            val loc = location
+                                val name = document.getString("Name")!!
+                                val items = document.get("Items") as List<String>
+                                val prices = document.get("Prices") as List<String>
+                                val userFav = document.get("userFav") as List<String>
+                                val loc = location
 
-                            val res = Restaurant(name, items, prices, loc, userFav)
-                            restaurants.add(res)
+                                val res = Restaurant(name, items, prices, loc, userFav)
+                                restaurants.add(res)
                         }
                     }
                 }
-
+                activity?.runOnUiThread{
+                    adapter.updateData(restaurants)
+                }
             }
             .addOnFailureListener { exception ->
                 println("Error getting documents: $exception")
             }
 
 
+
     }
-    private fun calculateDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+    fun calculateDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
         val r = 3963 // radius of earth in mi
         val latDistance = Math.toRadians(lat2 - lat1)
         val lonDistance = Math.toRadians(lon2 - lon1)
@@ -117,12 +123,20 @@ class AllRestaurantsFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_fav_restaurants, container, false)
-        val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_view_fav)
-        recyclerView.adapter = adapter
-        recyclerView.layoutManager = LinearLayoutManager(context)
-        adapter.updateData(restaurants)
-        return view
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_all_restaurants, container, false)
     }
+
+
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_view_all)
+        val layoutManager = LinearLayoutManager(requireContext())
+        recyclerView.layoutManager = layoutManager
+        recyclerView.adapter = adapter
+    }
+
 
 }
