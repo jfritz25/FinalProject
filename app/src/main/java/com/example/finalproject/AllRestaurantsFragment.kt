@@ -65,8 +65,10 @@ class AllRestaurantsFragment : Fragment() {
         }
         fusedLocationClient.lastLocation
             .addOnSuccessListener { location: Location? ->
-                userLat = location!!.latitude
-                userLong = location.longitude
+                location?.let {
+                    userLat = it.latitude
+                    userLong = it.longitude
+                }
             }
         val db = FirebaseFirestore.getInstance()
         db.collection("Restaurants")

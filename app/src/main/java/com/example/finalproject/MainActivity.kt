@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.fragment.app.FragmentTransaction
 import com.google.firebase.auth.FirebaseAuth
 
+
 class MainActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private lateinit var authStateListener : FirebaseAuth.AuthStateListener

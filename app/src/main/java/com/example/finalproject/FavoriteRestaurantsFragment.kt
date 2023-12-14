@@ -22,10 +22,10 @@ import kotlin.math.sqrt
 import com.google.firebase.auth.FirebaseAuth
 
 
+
 class FavoriteRestaurantsFragment : Fragment() {
     private val user = FirebaseAuth.getInstance().currentUser
     private var restaurants = mutableListOf<Restaurant>()
-    private val adapter = FavoriteRestaurantsAdapter(restaurants)
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var userLat: Double = 0.0
     private var userLong: Double = 0.0
@@ -35,6 +35,7 @@ class FavoriteRestaurantsFragment : Fragment() {
         } else {
         }
     }
+    private var adapter= FavoriteRestaurantsAdapter(mutableListOf())
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,11 +67,14 @@ class FavoriteRestaurantsFragment : Fragment() {
         }
         fusedLocationClient.lastLocation
             .addOnSuccessListener { location: Location? ->
-                userLat = location!!.latitude
-                userLong = location.longitude
+                location?.let {
+                    userLat = it.latitude
+                    userLong = it.longitude
+                }
             }
+
         val db = FirebaseFirestore.getInstance()
-        db.collection("Restaurants")
+        db.collection("restaurants")
             .get()
             .addOnSuccessListener { result ->
                 for (document in result) {
@@ -96,11 +100,14 @@ class FavoriteRestaurantsFragment : Fragment() {
                         }
                     }
                 }
+                activity?.runOnUiThread{
+                        adapter.updateData(restaurants)
+                }
+            }
+    .addOnFailureListener { exception ->
+        println("Error getting documents: $exception")
+    }
 
-            }
-            .addOnFailureListener { exception ->
-                println("Error getting documents: $exception")
-            }
 
 
     }
@@ -118,12 +125,19 @@ class FavoriteRestaurantsFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_fav_restaurants, container, false)
-        val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_view_fav)
-        recyclerView.adapter = adapter
-        recyclerView.layoutManager = LinearLayoutManager(context)
-        adapter.updateData(restaurants)
-        return view
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_fav_restaurants, container, false)
     }
+
+
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_view_fav)
+        recyclerView.layoutManager = LinearLayoutManager(context)
+        recyclerView.adapter = adapter
+    }
+
 
 }
